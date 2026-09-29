@@ -15,11 +15,12 @@ DEFAULT_CONFIG_PATH = PROJECT_ROOT / "config" / "config.yaml"
 
 class LLMConfig(BaseModel):
     provider: str = "gemini"
-    model: str = "gemini-2.5-flash"
+    model: str = "gemini-3.8-flash"
+    fallback_models: list[str] = Field(default_factory=list)
     temperature: float = Field(0.2, ge=0, le=2)
     qa_temperature: float = Field(0.4, ge=0, le=2)
     max_output_tokens: int = Field(8192, gt=0)
-    thinking_budget: int | None = 0
+    thinking_budget: int | None = None
     max_retries: int = Field(4, ge=0)
     retry_base_delay: float = Field(2.0, ge=0)
 

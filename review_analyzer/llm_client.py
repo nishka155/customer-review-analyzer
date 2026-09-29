@@ -2,6 +2,8 @@
 
 Features
 * Structured JSON output constrained by a Pydantic schema, then validated.
+* Automatic fallback to the next configured model when one is retired,
+  overloaded (503) or out of quota (429).
 * Exponential backoff with jitter on rate limits (429), server errors (5xx)
   and malformed/invalid JSON.
 * On-disk response cache keyed by (model, settings, prompts, schema), so
@@ -32,6 +34,8 @@ log = logging.getLogger(__name__)
 T = TypeVar("T", bound=BaseModel)
 
 RETRYABLE_STATUS = {408, 429, 500, 502, 503, 504}
+# Model not found / quota exhausted / overloaded: try the next fallback model.
+FALLBACK_STATUS = {404, 429, 503}
 
 
 class LLMError(RuntimeError):
@@ -96,6 +100,8 @@ class GeminiClient:
         self.cache = cache
         self.usage = UsageStats()
         self._lock = threading.Lock()
+        self._models = [config.model, *config.fallback_models]
+        self._active = 0
 
     # ------------------------------------------------------------------ public
 
@@ -146,17 +152,17 @@ class GeminiClient:
                     log.warning("Ignoring corrupt cache entry %s", cache_key[:8])
 
         last_error: Exception | None = None
-        for attempt in range(self.config.max_retries + 1):
-            if attempt:
-                delay = self.config.retry_base_delay * 2 ** (attempt - 1) + random.uniform(0, 1)
-                log.info("Retry %d/%d in %.1fs (%s)", attempt, self.config.max_retries, delay, last_error)
+        backoff = 0  # consecutive failures on the current model
+        for _ in range(self.config.max_retries + len(self._models)):
+            if backoff:
+                delay = self.config.retry_base_delay * 2 ** (backoff - 1) + random.uniform(0, 1)
+                log.info("Retry in %.1fs (%s)", delay, last_error)
                 with self._lock:
                     self.usage.retries += 1
                 time.sleep(delay)
+            model = self.active_model
             try:
-                response = self._client.models.generate_content(
-                    model=self.config.model, contents=prompt, config=gen_config
-                )
+                response = self._client.models.generate_content(model=model, contents=prompt, config=gen_config)
                 self._record_usage(response)
                 text = response.text
                 if not text:
@@ -164,18 +170,38 @@ class GeminiClient:
                     raise ValueError(f"Empty response (finish_reason={reason})")
                 result = parse(text)
             except errors.APIError as exc:
+                last_error = exc
+                if exc.code in FALLBACK_STATUS and self._fall_back_from(model):
+                    backoff = 0
+                    continue
                 if exc.code not in RETRYABLE_STATUS:
                     raise LLMError(f"Gemini API error {exc.code}: {exc.message}") from exc
-                last_error = exc
+                backoff += 1
             except (ValidationError, ValueError) as exc:
                 # Truncated / malformed JSON or schema mismatch: retrying usually fixes it.
                 last_error = exc
+                backoff += 1
             else:
                 if cache_key:
                     self.cache.set(cache_key, text)
                 return result
 
-        raise LLMError(f"LLM call failed after {self.config.max_retries + 1} attempts: {last_error}")
+        raise LLMError(f"LLM call failed after retries: {last_error}")
+
+    @property
+    def active_model(self) -> str:
+        return self._models[self._active]
+
+    def _fall_back_from(self, failed_model: str) -> bool:
+        """Switch (for all threads) to the next fallback model. False if none is left."""
+        with self._lock:
+            if self.active_model != failed_model:  # another thread already switched
+                return True
+            if self._active + 1 >= len(self._models):
+                return False
+            self._active += 1
+            log.warning("Model %s unavailable; falling back to %s", failed_model, self.active_model)
+            return True
 
     def _record_usage(self, response) -> None:
         meta = getattr(response, "usage_metadata", None)

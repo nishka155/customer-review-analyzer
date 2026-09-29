@@ -106,14 +106,15 @@ The tests use a fake LLM client, so they need no API key or network.
 
 * **Batching:** 10 reviews per request, which means about 10× fewer API calls than one call per review. The size is configurable.
 * **Concurrency:** batches run in parallel through a thread pool (`max_workers`).
-* **Token savings:** HTML and URLs are stripped, whitespace is collapsed, exact duplicates are removed, long reviews are truncated, and "thinking" is disabled for the labelling task. Synthesis receives aggregated stats and at most 25+25 quotes, not the whole dataset. Q&A sends only the top-k retrieved reviews.
+* **Token savings:** HTML and URLs are stripped, whitespace is collapsed, exact duplicates are removed, and long reviews are truncated. Synthesis receives aggregated stats and at most 25+25 quotes, not the whole dataset. Q&A sends only the top-k retrieved reviews.
 * **Disk cache:** identical requests are served from `.cache/`, so a re-run costs nothing.
+* **Model fallback:** if the primary model is retired (404), out of quota (429) or overloaded (503), the client switches to the next model in `fallback_models` for all threads.
 * **Resilience:** exponential backoff with jitter on 429/5xx errors and on malformed JSON. Reviews the model skips are re-requested once. Failed batches are reported without crashing the run, and hallucinated review IDs are discarded.
 * **Usage tracking:** API calls, cache hits and tokens are shown in the UI and CLI.
 
 ## Configuration (`config/config.yaml`)
 
-Key settings: `llm.model`, `temperature`, `thinking_budget`, `max_retries`, `analysis.batch_size`, `max_workers`, `aspects`, `allow_new_aspects`, `cache.enabled`, and `qa.top_k_reviews`. The API key is **never** stored in the config. It is read from the `GEMINI_API_KEY` environment variable or `.env`, which is git-ignored.
+Key settings: `llm.model`, `fallback_models`, `temperature`, `thinking_budget`, `max_retries`, `analysis.batch_size`, `max_workers`, `aspects`, `allow_new_aspects`, `cache.enabled`, and `qa.top_k_reviews`. The API key is **never** stored in the config. It is read from the `GEMINI_API_KEY` environment variable or `.env`, which is git-ignored.
 
 ## Input format
 

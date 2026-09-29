@@ -81,6 +81,9 @@ def batch_tab(analyzer: ReviewAnalyzer, product: str) -> None:
         )
         st.caption(f"Pre-processing: kept {prep['kept']} of {prep['input_rows']} rows "
                    f"(removed {prep['empty_or_short']} empty, {prep['duplicates']} duplicates)")
+        if not reviews:
+            st.error("No usable reviews found - check the selected text column.")
+            return
         bar = st.progress(0.0, text="Analysing reviews...")
         try:
             run = analyzer.analyze(reviews, product, progress=lambda d, t: bar.progress(d / t, text=f"Analysed {d}/{t}"))
@@ -123,9 +126,9 @@ def render_results(run: AnalysisRun, report, product: str, analyzer: ReviewAnaly
     )
     if not aspects.empty:
         long = aspects.melt(id_vars="aspect", value_vars=["positive", "neutral", "negative"],
-                            var_name="sentiment", value_name="mentions")
+                            var_name="sentiment", value_name="count")
         right.plotly_chart(
-            px.bar(long, y="aspect", x="mentions", color="sentiment", orientation="h",
+            px.bar(long, y="aspect", x="count", color="sentiment", orientation="h",
                    color_discrete_map=SENTIMENT_COLORS, title="Sentiment by aspect",
                    category_orders={"aspect": aspects["aspect"].tolist()}),
             use_container_width=True,

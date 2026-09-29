@@ -50,7 +50,10 @@ def main(argv: list[str] | None = None) -> int:
         df, text_col, rating_col,
         max_chars=a.max_review_chars, min_chars=a.min_review_chars, max_reviews=a.max_reviews,
     )
-    print(f"Loaded {prep['input_rows']} rows -> {prep['kept']} clean, unique reviews")
+    print(f"Loaded {prep['input_rows']} rows from column '{text_col}' -> {prep['kept']} clean, unique reviews")
+    if not reviews:
+        print("Error: no usable reviews found; check --text-column.", file=sys.stderr)
+        return 2
 
     analyzer = build_analyzer(config, api_key)
     try:

@@ -88,6 +88,7 @@ def test_prepare_reviews_dedupes_and_drops_empty():
 
 def test_guess_column():
     assert guess_column(["id", "Review_Text", "Rating"], ("review", "text")) == "Review_Text"
+    assert guess_column(["review_id", "rating", "review_text"], ("review",)) == "review_text"
     assert guess_column(["a", "b"], ("review",)) is None
 
 

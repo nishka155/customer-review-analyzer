@@ -6,11 +6,14 @@
 
 llm:
   provider: gemini
-  model: gemini-2.5-flash          # any Gemini model id, e.g. gemini-2.5-flash-lite / gemini-2.5-pro
+  model: gemini-3.8-flash          # primary model (any Gemini model id)
+  fallback_models:                 # tried in order if the primary is retired (404), out of quota (429) or overloaded (503)
+    - gemini-3.5-flash-lite
+    - gemini-flash-lite-latest
   temperature: 0.2                 # low = consistent, reproducible labels
   qa_temperature: 0.4              # a little more fluent for free-text answers
   max_output_tokens: 8192
-  thinking_budget: 0               # 0 disables "thinking" on 2.5 Flash (faster + cheaper); null = model default
+  thinking_budget: null            # null = model default; set an int only for models that support it (e.g. 0 on 2.5 Flash)
   max_retries: 4                   # retries on 429 / 5xx / malformed JSON
   retry_base_delay: 2.0            # seconds, exponential backoff: 2, 4, 8, 16 (+ jitter)
 

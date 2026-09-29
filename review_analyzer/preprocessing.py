@@ -40,12 +40,17 @@ def clean_text(text: str, max_chars: int) -> str:
 
 
 def guess_column(columns: list[str], hints: tuple[str, ...]) -> str | None:
-    lowered = {c: c.lower() for c in columns}
+    """Pick the first column whose name contains a hint, ignoring ID columns."""
+    candidates = [c for c in columns if not _is_id_column(c.lower())]
     for hint in hints:
-        for original, low in lowered.items():
-            if hint in low:
-                return original
+        for column in candidates:
+            if hint in column.lower():
+                return column
     return None
+
+
+def _is_id_column(name: str) -> bool:
+    return name == "id" or name.endswith(("_id", " id", "-id"))
 
 
 def prepare_reviews(
