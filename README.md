@@ -73,6 +73,13 @@ streamlit run app.py
 
 Open <http://localhost:8501>, keep **Sample dataset** selected, and click **Analyze reviews**.
 
+### Deploy online (Streamlit Community Cloud, free)
+
+1. Sign in at <https://share.streamlit.io> with GitHub and click **Create app**.
+2. Pick this repository, branch `main`, main file `app.py`.
+3. Under **Advanced settings → Secrets**, add `GEMINI_API_KEY = "your-key"`.
+4. Click **Deploy**. The app reads the key from Streamlit secrets, so it is never committed.
+
 ### Run from the command line
 
 ```bash

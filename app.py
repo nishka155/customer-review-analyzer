@@ -21,6 +21,14 @@ SENTIMENT_COLORS = {"positive": "#2e9e5b", "neutral": "#9aa0a6", "mixed": "#e0a5
 st.set_page_config(page_title="Customer Review Analyzer", page_icon="📊", layout="wide")
 
 
+def secret_api_key() -> str | None:
+    """API key from .env / environment, or from Streamlit secrets when deployed."""
+    try:
+        return get_api_key() or st.secrets.get("GEMINI_API_KEY")
+    except FileNotFoundError:  # no secrets.toml locally
+        return None
+
+
 @st.cache_resource(show_spinner=False)
 def get_analyzer(api_key: str, model: str, batch_size: int) -> ReviewAnalyzer:
     config = load_config()
@@ -33,10 +41,10 @@ def sidebar() -> tuple[ReviewAnalyzer | None, str]:
     config = load_config()
     with st.sidebar:
         st.header("Settings")
-        env_key = get_api_key()
+        env_key = secret_api_key()
         api_key = env_key or st.text_input("Gemini API key", type="password", help="Or set GEMINI_API_KEY in .env")
         if env_key:
-            st.success("API key loaded from environment", icon="🔑")
+            st.success("API key configured", icon="🔑")
         model = st.text_input("Model", config.llm.model)
         batch_size = st.slider("Reviews per API call", 1, 25, config.analysis.batch_size)
         product = st.text_input("Product context", "AuraBuds Pro wireless earbuds",
