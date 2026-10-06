@@ -1,0 +1,9 @@
+aspect,mentions,positive,negative,neutral,net_sentiment,pct_of_reviews
+battery / performance,17,9,6,2,0.18,39.5
+product quality,12,7,5,0,0.17,31.6
+price / value,9,7,1,1,0.67,23.7
+design / comfort,7,3,3,1,0.0,18.4
+ease of use,5,2,3,0,-0.2,13.2
+customer service,4,2,2,0,0.0,10.5
+delivery / shipping,4,2,2,0,0.0,10.5
+packaging,3,2,1,0,0.33,7.9
