@@ -1,5 +1,15 @@
 # 📊 Customer Review Analyzer
 
+| | |
+|---|---|
+| **Name** | Nishka Mishra |
+| **Registration No.** | 23FE10CDS00431 |
+| **Branch** | Data Science |
+| **Batch** | F |
+| **Project** | Customer Review Analyzer (NLP Capstone) |
+| **GitHub** | [@nishka155](https://github.com/nishka155) |
+| **Personal repository** | [MUJ-DS-23FE10CDS00431](https://github.com/nishka155/MUJ-DS-23FE10CDS00431) |
+
 An NLP application that turns hundreds of raw customer reviews into a decision-ready product report, using **Google Gemini** through its API.
 
 It does three LLM-powered NLP tasks:
