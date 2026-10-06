@@ -79,7 +79,7 @@ def batch_tab(analyzer: ReviewAnalyzer, product: str) -> None:
     rating_col = c2.selectbox("Star rating column (optional)", rating_options,
                               index=rating_options.index(guessed_rating) if guessed_rating else 0)
     with st.expander(f"Preview ({len(df)} rows)"):
-        st.dataframe(df.head(20), use_container_width=True)
+        st.dataframe(df.head(20), width="stretch")
 
     if st.button("Analyze reviews", type="primary"):
         a = config.analysis
@@ -130,7 +130,7 @@ def render_results(run: AnalysisRun, report, product: str, analyzer: ReviewAnaly
     left.plotly_chart(
         px.pie(counts, names="sentiment", values="reviews", hole=0.5, color="sentiment",
                color_discrete_map=SENTIMENT_COLORS, title="Overall sentiment"),
-        use_container_width=True,
+        width="stretch",
     )
     if not aspects.empty:
         long = aspects.melt(id_vars="aspect", value_vars=["positive", "neutral", "negative"],
@@ -139,7 +139,7 @@ def render_results(run: AnalysisRun, report, product: str, analyzer: ReviewAnaly
             px.bar(long, y="aspect", x="count", color="sentiment", orientation="h",
                    color_discrete_map=SENTIMENT_COLORS, title="Sentiment by aspect",
                    category_orders={"aspect": aspects["aspect"].tolist()}),
-            use_container_width=True,
+            width="stretch",
         )
 
     s, p = st.columns(2)
@@ -153,13 +153,13 @@ def render_results(run: AnalysisRun, report, product: str, analyzer: ReviewAnaly
             st.markdown(f"**{t.title}** · _{t.frequency}_  \n{t.description}")
 
     st.subheader("Recommendations")
-    st.dataframe(pd.DataFrame([r.model_dump() for r in report.recommendations]), use_container_width=True, hide_index=True)
+    st.dataframe(pd.DataFrame([r.model_dump() for r in report.recommendations]), width="stretch", hide_index=True)
     if report.emerging_issues:
         st.error("**Emerging issues:** " + " · ".join(report.emerging_issues))
 
     st.subheader("Review-level results")
     choice = st.multiselect("Filter by sentiment", list(SENTIMENT_COLORS), default=list(SENTIMENT_COLORS))
-    st.dataframe(df[df["sentiment"].isin(choice)], use_container_width=True, hide_index=True)
+    st.dataframe(df[df["sentiment"].isin(choice)], width="stretch", hide_index=True)
 
     mismatches = rating_mismatches(df)
     if not mismatches.empty:
@@ -208,7 +208,7 @@ def single_tab(analyzer: ReviewAnalyzer, product: str) -> None:
         st.write(f"**Summary:** {result.summary}")
         st.write(f"**Emotions:** {', '.join(result.emotions) or '-'}  ·  **Key phrases:** {', '.join(result.key_phrases)}")
         if result.aspects:
-            st.dataframe(pd.DataFrame([a.model_dump() for a in result.aspects]), hide_index=True, use_container_width=True)
+            st.dataframe(pd.DataFrame([a.model_dump() for a in result.aspects]), hide_index=True, width="stretch")
 
 
 def main() -> None:
