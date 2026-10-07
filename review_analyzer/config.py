@@ -21,6 +21,7 @@ class LLMConfig(BaseModel):
     qa_temperature: float = Field(0.4, ge=0, le=2)
     max_output_tokens: int = Field(8192, gt=0)
     thinking_budget: int | None = None
+    request_timeout_seconds: float = Field(60, gt=0)
     max_retries: int = Field(4, ge=0)
     retry_base_delay: float = Field(2.0, ge=0)
 

@@ -95,7 +95,15 @@ class GeminiClient:
     def __init__(self, api_key: str, config: LLMConfig, cache: ResponseCache | None = None):
         if not api_key:
             raise LLMError("Missing Gemini API key. Set GEMINI_API_KEY in your .env file.")
-        self._client = genai.Client(api_key=api_key)
+        # Retries and fallback are handled here, so the SDK's own retry loop is
+        # disabled; otherwise it would wait on an overloaded model before we can switch.
+        self._client = genai.Client(
+            api_key=api_key,
+            http_options=types.HttpOptions(
+                timeout=int(config.request_timeout_seconds * 1000),
+                retry_options=types.HttpRetryOptions(attempts=1),
+            ),
+        )
         self.config = config
         self.cache = cache
         self.usage = UsageStats()
