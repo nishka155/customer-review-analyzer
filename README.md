@@ -1,5 +1,7 @@
 # 📊 Customer Review Analyzer
 
+**▶ Live demo: <https://customer-review-analyzer-mbf4qfczzc4tat82elfx9u.streamlit.app>**
+
 | | |
 |---|---|
 | **Name** | Nishka Mishra |
@@ -8,6 +10,7 @@
 | **Batch** | F |
 | **Project** | Customer Review Analyzer (NLP Capstone) |
 | **GitHub** | [@nishka155](https://github.com/nishka155) |
+| **Live demo** | [customer-review-analyzer-mbf4qfczzc4tat82elfx9u.streamlit.app](https://customer-review-analyzer-mbf4qfczzc4tat82elfx9u.streamlit.app) |
 | **Personal repository** | [MUJ-DS-23FE10CDS00431](https://github.com/nishka155/MUJ-DS-23FE10CDS00431) |
 
 An NLP application that turns hundreds of raw customer reviews into a decision-ready product report, using **Google Gemini** through its API.
